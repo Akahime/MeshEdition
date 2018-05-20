@@ -18,7 +18,72 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
 {
     Solid meshCopy;
     mesh->copy(meshCopy);
+    int i=0;
 
+    // Copy original mesh edges
+    SolidEdgeIterator edgeIterator(mesh);
+    Edge *oldMeshEdges[mesh->numEdges()];
+    for(i=0; !edgeIterator.end(); i++, ++edgeIterator)
+    {
+        oldMeshEdges[i] = *edgeIterator;
+    }
+
+    // Copy original mesh vertices
+    SolidVertexIterator vertexIterator(mesh);
+    Vertex *oldMeshVertices[mesh->numVertices()];
+    for(i=0; !vertexIterator.end(); i++, ++vertexIterator)
+    {
+        oldMeshVertices[i] = *vertexIterator;
+    }
+
+    // Get face with maximum id (for using split function)
+    SolidFaceIterator faceIterator(mesh);
+    int maxFaceId = 0;
+    for(i=0; !faceIterator.end(); i++, ++faceIterator)
+    {
+        if((*faceIterator)->id() > maxFaceId)
+        {
+            maxFaceId = (*faceIterator)->id();
+        }
+    }
+
+    // Loops through Edges of new mesh (only those common with old mesh) and split them
+    std::vector<Edge*> edgesToSwap;
+    Edge *newEdgesFromSplit[2]={NULL,NULL};
+    
+    SolidEdgeIterator newEdgeIterator(&meshCopy);
+    for(i=0; i<(sizeof(oldMeshEdges)/sizeof(*oldMeshEdges)); i++, ++newEdgeIterator)
+    {
+        double x,y,z;
+
+        // Edge we are working on
+        Edge *oldEdge = oldMeshEdges[i];
+        Point oldPoint1 = mesh->edgeVertex1(oldEdge)->point();
+        Point oldPoint2 = mesh->edgeVertex2(oldEdge)->point();
+
+        // New vertex from split
+        newEdgesFromSplit[0] = NULL;
+        newEdgesFromSplit[1] = NULL;
+        Vertex *newVertex = mesh->edgeSplit( oldEdge , newEdgesFromSplit, maxFaceId);
+
+        // Position new edge
+        if(mesh->isBoundary(*newEdgeIterator)) // If boundary = formula 1/2
+        {
+            x = (oldPoint1(0) + oldPoint2(0))/2;
+            y = (oldPoint1(1) + oldPoint2(1))/2;
+            z = (oldPoint1(2) + oldPoint2(2))/2;
+        }
+        else // If not boundary = formula 3/8 x 1/8
+        {
+            HalfEdge *oldEdgeHalfs[2] = {(*newEdgeIterator)->halfedge(0),(*newEdgeIterator)->halfedge(1)};
+            x = (oldPoint1(0) + oldPoint2(0))*3/8 + (oldEdgeHalfs[0]->he_next()->target()->point()(0) + oldEdgeHalfs[1]->he_next()->target()->point()(0))/8;
+            y = (oldPoint1(1) + oldPoint2(1))*3/8 + (oldEdgeHalfs[0]->he_next()->target()->point()(1) + oldEdgeHalfs[1]->he_next()->target()->point()(1))/8;
+            z = (oldPoint1(1) + oldPoint2(1))*3/8 + (oldEdgeHalfs[0]->he_next()->target()->point()(2) + oldEdgeHalfs[1]->he_next()->target()->point()(2))/8;
+        }
+    }
+
+
+    /*
     //storing all vertices
     int i=0;
     SolidVertexIterator veriter(mesh);
@@ -37,10 +102,10 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
     }
 
 
-    Edge *swapList[mesh->numFaces()];
-    Edge *splitSwap[2]={NULL,NULL};
+    std::vector<Edge*> swapList;
+    Edge *splitSwap[2]={NULL,NULL}; //2 edges
 
-    //getting max face
+    //getting max face for id of new faces
     SolidFaceIterator fciter(mesh);
     int maxfcid=-1;
     for(; !fciter.end(); ++fciter)
@@ -49,22 +114,24 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
             maxfcid=(*fciter)->id();
     }
 
-    //splitting and swapping by iterating through edges
+    //splitting and swapping (flipping) by iterating through edges
     SolidEdgeIterator eitercpy(&meshCopy);
     int j;
     double x,y,z;
-    for(i=0,j=0;i<(sizeof(alledges)/sizeof(*alledges));i++,++eitercpy)
+    for(i=0,j=0;i<(sizeof(alledges)/sizeof(*alledges));i++,++eitercpy) // We should not split an edge already split so limit to alledges, but iterate over the new mesh
     {
         splitSwap[0]=splitSwap[1]=NULL;
         Vertex *evert1= mesh->edgeVertex1(alledges[i]);
         Vertex *evert2= mesh->edgeVertex2(alledges[i]);
-        Vertex *ver1=mesh->edgeSplit(alledges[i],splitSwap,maxfcid);
-        if(splitSwap[0]!=NULL)
-            swapList[j++]=splitSwap[0];
-        if(splitSwap[1]!=NULL)
-            swapList[j++]=splitSwap[1];
+        Vertex *ver1=mesh->edgeSplit(alledges[i],splitSwap,maxfcid); // New created vertex by split, don't have a position
 
-        //position of new vertex determined here
+        //splitSwap contains 2 new created edges
+        if(splitSwap[0]!=NULL)
+            swapList.push_back(splitSwap[0]);
+        if(splitSwap[1]!=NULL)
+            swapList.push_back(splitSwap[1]);
+
+        //position of new vertex only (middle of edge) : first if it's boundary, else normal case
         if(mesh->isBoundary(*eitercpy))
         {
             //printf("Check");
@@ -87,14 +154,6 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
     }
 
 
-    for(i=0;i<(sizeof(swapList)/sizeof(*swapList));i++)
-    {
-        Edge *e=swapList[i];
-        mesh->edgeSwap(e,((e->halfedge(0))->he_next())->target(),((e->halfedge(1))->he_next())->target());
-    }
-
-
-
     //new position of old vertices determined here
     SolidVertexIterator veritercpy(&meshCopy);
     double tem1,tem2,tem3,alpha;
@@ -102,11 +161,11 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
     {
         Vertex *oldv=allvert[i];
         //printf("\n%f %f %f -> ",oldv->point()(0),oldv->point()(1),oldv->point()(2));
-        VertexVertexIterator vviter(*veritercpy);
+        VertexVertexIterator vviter(*veritercpy); //Iterate over all vertices around *veritercpy = *oldv
         //printf("Im here\n");
         tem1=tem2=tem3=0;
         j=0;
-        if(mesh->isBoundary(*veritercpy))
+        if(mesh->isBoundary(allvert[i]))
         {
             //printf("Hi");
             for(j=0;!vviter.end();++vviter)
@@ -147,4 +206,17 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
         //printf("\n%f %f %f %f-> ",x,y,z, (1.0/4.0)*cos(2*PI/j));
         //printf("\n%f %f %f -> ",oldv->point()(0),oldv->point()(1),oldv->point()(2));
     }
+
+    // Swap edges
+    for(std::vector<Edge*>::iterator swapit = swapList.begin(); swapit != swapList.end(); swapit++)
+    {
+        Edge *e=*swapit;
+        mesh->edgeSwap(e,((e->halfedge(0))->he_next())->target(),((e->halfedge(1))->he_next())->target());
+    }
+
+     */
+}
+
+void Simplification(Solid *mesh){
+
 }

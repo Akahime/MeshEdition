@@ -21,5 +21,7 @@ namespace MeshLib
         ~MeshOperator();
 
         void LoopSubdivisionOneStep(Solid *mesh);
+
+        void Simplification(Solid *mesh);
     };
 }

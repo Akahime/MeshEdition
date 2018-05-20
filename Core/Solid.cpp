@@ -1300,7 +1300,7 @@ Vertex * Solid::edgeSplit( Edge * e ,Edge *splitSwap[], int maxfcid)
 
 	m_edges.remove( e );
 
-int flag[2]={0};
+	int flag[2]={0};
 	List<Face> new_faces;
 
 	for( int j = 0; j < 2; j ++ )
@@ -1311,6 +1311,7 @@ int flag[2]={0};
 
 		if( he == NULL ) continue;
 
+		//Remove faces each side edge
 		tFace  f = he->face();
 		if(f->id()<=maxfcid)
 		{
@@ -1320,6 +1321,7 @@ int flag[2]={0};
 		m_faces.remove( f );
 		delete f;
 
+		//Remove half edges around deleted face
 		for( int i = 0; i < 3; i ++ )
 		{
 			v[i] = he->target();
@@ -1342,6 +1344,7 @@ int flag[2]={0};
 			he = ne;
 		}
 
+		//Create 2 new faces on 1 side edge
 		int vid[3];
 		tVertex w[3];
 		w[0] = nv; w[1] = v[0]; w[2] = v[1];
@@ -1362,14 +1365,14 @@ int flag[2]={0};
 		
 		if(flag[j]==1)
 		{
-			splitSwap[j]=vertexEdge(v[1],nv);
+			splitSwap[j]=vertexEdge(v[1],nv); //splitSwap contains the 2 new created edges
 			//printf("Edge selected\n");
 		}
 		else
-			splitSwap[j]=NULL;
+			splitSwap[j]=NULL; //If we subvided an already new face, they are correctly positioned
 	}	
 
-
+	// Put halfedges in right order
 	for( ListIterator<Face> iter( new_faces ); !iter.end(); ++ iter )
 	{
 		Face * f = *iter;
@@ -1391,7 +1394,7 @@ int flag[2]={0};
 	}
 
 	delete e;
-	return nv;	
+	return nv;	//Return position new center vertex
 };
 
 
