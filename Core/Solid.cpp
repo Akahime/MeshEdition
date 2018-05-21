@@ -1369,7 +1369,7 @@ Vertex * Solid::edgeSplit( Edge * e ,Edge *splitSwap[], int maxfcid)
 			//printf("Edge selected\n");
 		}
 		else
-			splitSwap[j]=NULL; //If we subvided an already new face, they are correctly positioned
+			splitSwap[j]=NULL; //If we subvided an already new face, they are correctly positioned (no need to swap)
 	}	
 
 	// Put halfedges in right order
