@@ -3,8 +3,15 @@ project(MeshEdition)
 
 set(CMAKE_CXX_STANDARD 11)
 
+find_package(OpenGL REQUIRED)
+find_package(GLUT REQUIRED)
+
+include_directories(. include src Core ${OPENGL_INCLUDE_DIR})
+
 set(SOURCE_FILES
         src/main.cpp
+        src/MeshOperator.cpp
+        src/MeshOperator.h
         Core/Array.h
         Core/avltree.h
         Core/DList.h
@@ -38,6 +45,7 @@ set(SOURCE_FILES
         Core/Trait.cpp
         Core/Trait.h
         Core/Vertex.cpp
-        Core/Vertex.h src/MeshOperator.cpp src/MeshOperator.h)
+        Core/Vertex.h)
 
 add_executable(MeshEdition ${SOURCE_FILES})
+target_link_libraries(MeshEdition ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})

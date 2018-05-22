@@ -129,6 +129,7 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
 
 }
 
-void Simplification(Solid *mesh){
+void Simplification(Solid *mesh)
+{
 
 }
