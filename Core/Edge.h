@@ -118,6 +118,11 @@ public:
 		return key;
     };
 
+	EdgeRecord * record()
+	{
+		return m_record;
+	};
+
     bool operator< (const Edge & e) const
     {
         return key < e.key;
@@ -133,8 +138,44 @@ private:
 	EdgeKey key;
 	std::string m_string;   //string
 	Trait	  * m_trait;
+	EdgeRecord * m_record;
 };
 
+/*! Added by Sarah G for Mesh Simplification */
+// An edge record keeps track of all the information about edges
+// that we need while applying our mesh simplification algorithm.
+class EdgeRecord {
+	public:
+		EdgeRecord( void ) {}
+		EdgeRecord( Edge& _edge );
+		// The second constructor takes an edge, and computes all
+		// the essential data.  In particular, it computes the sum
+		// of the quadrics at the two endpoints, and solves for the
+		// optimal midpoint position as measured by this quadric.
+		// It also stores the value of this quadric as the "score"
+		// used by the priority queue.
+
+		Edge * edge; // the edge referred to by this record
+
+		Point optimalPoint; // the optimal point, if we were
+		// to collapse this edge next
+
+		double cost; // the cost associated with collapsing this edge,
+		// which is very (very!) roughly something like
+		// the distance we'll deviate from the original
+		// surface if this edge is collapsed
+};
+
+/*! Added by Sarah G for Mesh Simplification */
+inline bool operator<(const EdgeRecord& r1, const EdgeRecord& r2) {
+	if (r1.cost != r2.cost) {
+		return (r1.cost < r2.cost);
+	}
+
+	Edge * e1 = r1.edge;
+	Edge * e2 = r2.edge;
+	return &*e1 < &*e2;
+}
 
 
 }//name space MeshLib

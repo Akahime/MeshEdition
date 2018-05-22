@@ -90,7 +90,7 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
         Vertex *oldVert = oldMeshVertices[i];
         
         VertexVertexIterator vertNeighboursIterator(*newVertexIterator); //Iterate over all vertices which are neighbours of oldVert
-        Point *newPoint = new Point();
+        Point newPoint = Point(0,0,0);
 
         if(mesh->isBoundary(oldVert)) // If boundary = formula 3/4 x 1/8
         {
@@ -99,25 +99,25 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
             {
                 if(mesh->isBoundary(*vertNeighboursIterator))
                 {
-                    *newPoint += (*vertNeighboursIterator)->point();
+                    newPoint += (*vertNeighboursIterator)->point();
                     n++;
                 }
             }
-            *newPoint = oldVert->point()*3/4 + *newPoint/8;
+            newPoint = oldVert->point()*3/4 + newPoint/8;
         }
         else // If boundary = formula (1-nB) x B
         {
             // We make the ponderated sum of neighbours
             for(n=0; !vertNeighboursIterator.end(); n++, ++vertNeighboursIterator)
             {
-                *newPoint += (*vertNeighboursIterator)->point();
+                newPoint += (*vertNeighboursIterator)->point();
             }
 
             beta = (n > 3) ? (1.0/n)*((5.0/8.0)-pow(((3.0/8.0)+(1.0/4.0)*(cos(2*PI/n))),2)) : 3/16;
-            *newPoint = oldVert->point() * (1 - n * beta) + (*newPoint) * beta;
+            newPoint = oldVert->point() * (1 - n * beta) + (newPoint) * beta;
 
         }
-        oldVert->point() = *newPoint;
+        oldVert->point() = newPoint;
     }
 
     // Swap edges

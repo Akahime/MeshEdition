@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-#include <math.h>
+#include <glm/glm.hpp>
 #include "Point.h"
 
 namespace MeshLib{
@@ -60,6 +60,12 @@ public:
     */
 	std::string &   string()   { return m_string;};
 
+	//! Get face quadric -- code by Sarah G --
+	/*!
+      \return quadric this face .
+    */
+	glm::mat4x4 * & quadric() {return m_quadric;};
+
 	//!  == operator defination.
     /*!
 	  \param f a Face to compare with this face.
@@ -89,6 +95,8 @@ private:
 	std::string   m_string;   //string
 	//!  Face trait
 	Trait	    * m_trait;
+	//! Face quadric -- code by Sarah G --
+	glm::mat4x4 * m_quadric;
 	
 };
 

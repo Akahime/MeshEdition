@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-#include <math.h>
+#include <glm/glm.hpp>
 #include "Point.h"
 
 namespace MeshLib{
@@ -29,11 +29,12 @@ public:
       \return A point belongs to this vertex.
     */
 	Point & point() { return  m_point; };
+
 	//!  Get vertex normal.
-    /*!      
+	/*!
       \return normal of this vertex.
     */
-	Point & normal(){ return  m_normal;};
+	Point normal();
 	
 	//!  Get vertex most ccw out halfedge.
     /*!      
@@ -66,6 +67,11 @@ public:
       \return trait(s) of this vertex.
     */
 	Trait *    & trait()		{ return m_trait; };
+	//! Get vertex quadric -- code by Sarah G --
+	/*!
+      \return quadric this face .
+    */
+	glm::mat4x4 * & quadric() {return m_quadric;};
 
 	//!  Get vertex id.
     /*!      
@@ -113,14 +119,13 @@ public:
     };
 
 
+
 private:
 	//!  Vertex id.
 	int	  m_id;
 
 	//!  Vertex point.
 	Point m_point;
-	//!  Vertex normal.
-	Point m_normal;
 
 	//!  Vertex halfedge.
 	HalfEdge * m_halfedge;
@@ -131,6 +136,8 @@ private:
 	std::string  m_string;
 	//!  Vertex trait.
 	Trait	   * m_trait;
+	//! Vertex quadric -- code by Sarah G --
+	glm::mat4x4 * m_quadric;
 
 };
 
