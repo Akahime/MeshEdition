@@ -4,7 +4,7 @@
 #include "MeshOperator.h"
 #include "../Core/iterators.h"
 #include <vector>
-#include <cmath>
+#include <glm/glm.hpp>
 
 using namespace MeshLib;
 
@@ -131,5 +131,30 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
 
 void Simplification(Solid *mesh)
 {
+    // Compute quadrics for each face
+    SolidFaceIterator faceIterator(mesh);
+    for(; !faceIterator.end(); ++faceIterator)
+    {
+        // We want the vector (a, b, c, d) such as the face equation is ax+by+cz+d=0
+        // (a,b,c) is the normal, we find d using one vertex in the face
+        Face *f = (*faceIterator);
+        glm::vec4 v = glm::vec4(f->norm()(0), f->norm()(1), f->norm()(2), -(f->norm()*f->halfedge()->target()->point()));
 
+        glm::mat4x4 K = glm::outerProduct(v,v);
+        (*faceIterator)->quadric() = K;
+    }
+
+    // Compute quadrics for each vertex
+    SolidVertexIterator vertexIterator(mesh);
+    for(; !vertexIterator.end(); ++vertexIterator)
+    {
+        glm::mat4x4 K = glm::mat4x4(0);
+        VertexFaceIterator faceNeighbours(*vertexIterator);
+        for(; !faceNeighbours.end(); ++faceNeighbours)
+        {
+            K += (*faceNeighbours)->quadric();
+        }
+    }
+
+    // For each edge, compute edge record
 }

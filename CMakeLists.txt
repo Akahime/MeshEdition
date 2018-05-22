@@ -45,7 +45,7 @@ set(SOURCE_FILES
         Core/Trait.cpp
         Core/Trait.h
         Core/Vertex.cpp
-        Core/Vertex.h)
+        Core/Vertex.h Core/mutablePriorityQueue.h)
 
 add_executable(MeshEdition ${SOURCE_FILES})
 target_link_libraries(MeshEdition ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})

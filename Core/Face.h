@@ -64,7 +64,7 @@ public:
 	/*!
       \return quadric this face .
     */
-	glm::mat4x4 * & quadric() {return m_quadric;};
+	glm::mat4x4 & quadric() {return m_quadric;};
 
 	//!  == operator defination.
     /*!
@@ -96,7 +96,7 @@ private:
 	//!  Face trait
 	Trait	    * m_trait;
 	//! Face quadric -- code by Sarah G --
-	glm::mat4x4 * m_quadric;
+	glm::mat4x4 m_quadric;
 	
 };
 

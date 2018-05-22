@@ -71,7 +71,7 @@ public:
 	/*!
       \return quadric this face .
     */
-	glm::mat4x4 * & quadric() {return m_quadric;};
+	glm::mat4x4 & quadric() {return m_quadric;};
 
 	//!  Get vertex id.
     /*!      
@@ -137,7 +137,7 @@ private:
 	//!  Vertex trait.
 	Trait	   * m_trait;
 	//! Vertex quadric -- code by Sarah G --
-	glm::mat4x4 * m_quadric;
+	glm::mat4x4 m_quadric;
 
 };
 

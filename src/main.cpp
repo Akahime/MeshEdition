@@ -18,20 +18,6 @@ OBJFileUtil of;
 std::string fileName;
 int iterations = 2, mode = 0;
 
-/*
-Point* vertexNormal(Vertex vert)
-{
-    VertexFaceIterator vfIterator(vert);
-    Point *N = new Point();
-    for (; !vvIterator.end(); ++vvIterator)
-    {
-        *N += (*vvIterator)->norm();
-    }
-    *N = *N / N->norm();
-    return N;
-}*/
-
-
 void displayMesh(int mode)
 {
     SolidFaceIterator faceIterator(mesh);
@@ -95,7 +81,7 @@ void display()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    loopSubdivision();
+    //loopSubdivision();
     glLoadIdentity();
 
     glTranslatef(-5,-5,-20);
