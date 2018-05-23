@@ -3,8 +3,8 @@
 //
 #include "MeshOperator.h"
 #include "../Core/iterators.h"
+#include "../Core/mutablePriorityQueue.h"
 #include <vector>
-#include <glm/glm.hpp>
 
 using namespace MeshLib;
 
@@ -138,9 +138,14 @@ void Simplification(Solid *mesh)
         // We want the vector (a, b, c, d) such as the face equation is ax+by+cz+d=0
         // (a,b,c) is the normal, we find d using one vertex in the face
         Face *f = (*faceIterator);
-        glm::vec4 v = glm::vec4(f->norm()(0), f->norm()(1), f->norm()(2), -(f->norm()*f->halfedge()->target()->point()));
 
-        glm::mat4x4 K = glm::outerProduct(v,v);
+        // Outer product of glm is unfortunately down ...
+        double a = f->norm()(0);
+        double b = f->norm()(1);
+        double c = f->norm()(2);
+        double d = -(f->norm()*f->halfedge()->target()->point());
+
+        glm::mat4 K = glm::mat4(glm::vec4(a*a, a*b, a*c, a*d), glm::vec4(b*a, b*b, b*c, b*d), glm::vec4(c*a, c*b, c*c, c*d), glm::vec4(a*d, b*d, c*d, d*d));
         (*faceIterator)->quadric() = K;
     }
 
@@ -148,13 +153,40 @@ void Simplification(Solid *mesh)
     SolidVertexIterator vertexIterator(mesh);
     for(; !vertexIterator.end(); ++vertexIterator)
     {
-        glm::mat4x4 K = glm::mat4x4(0);
-        VertexFaceIterator faceNeighbours(*vertexIterator);
-        for(; !faceNeighbours.end(); ++faceNeighbours)
-        {
-            K += (*faceNeighbours)->quadric();
+        HalfEdge *h = (*vertexIterator)->halfedge();
+        glm::mat4x4 K = glm::mat4x4(0.0f);
+
+        if (mesh->isBoundary(*vertexIterator)) {
+            do {
+                K += h->face()->quadric();
+                h = h->he_next()->he_sym();
+            } while (h != (*vertexIterator)->halfedge());
+        } else {
+            do {
+                K += h->face()->quadric();
+                h = h->he_sym()->he_next();
+            } while (h != (*vertexIterator)->halfedge());
         }
     }
 
     // For each edge, compute edge record
+    SolidEdgeIterator edgeIterator(mesh);
+    MutablePriorityQueue<EdgeRecord> queue;
+    for(; !edgeIterator.end(); ++edgeIterator)
+    {
+        (*edgeIterator)->record = EdgeRecord((*edgeIterator));
+        queue.insert((*edgeIterator)->record);
+    }
+
+    // Until target number of triangles is reached, collapse cheapest edge
+    int currFaces = mesh->numFaces();
+    int targetFaces = currFaces/4;
+    while(currFaces > targetFaces)
+    {
+        // Collapse edge
+        // TODO
+
+        // Update number of faces
+        currFaces = mesh->numFaces();
+    }
 }

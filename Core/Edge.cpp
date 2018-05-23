@@ -106,3 +106,34 @@ void Edge::get_vertices(Vertex *&v1, Vertex *&v2)
 	v2 = other_vertex(v1);
 	assert(v2);
 }
+
+// Code by Sarah G for Simplification
+EdgeRecord::EdgeRecord(Edge *e)
+{
+	HalfEdge* he = e->halfedge(0);
+	glm::mat4x4 K = he->target()->quadric() + he->source()->quadric();
+
+	// Solve Ax = b -- Section 4 of paper by Garland
+	glm::mat4x4 A = K;
+	A[3][0] = 0; A[3][1] = 0; A[3][2] = 0; A[3][3] = 1;
+	glm::vec4 b = glm::vec4(0,0,0,1);
+
+	if(glm::determinant(A) != 0) // A is invertible
+	{
+		glm::vec4 x = glm::inverse(A) * b; // solve Ax = b for x, by hitting both sides with the inverse of A
+
+		// Store the optimal point
+		optimalPoint = Point(x[0],x[1],x[2]);
+
+		// Compute the cost
+		cost = glm::dot(x, (K * x));
+	}
+	else
+	{
+		std::cout<<"Error : EdgeRecord matrix not invertible !!"<<std::endl;
+
+		// TODO
+	}
+	edge = e;
+
+}
