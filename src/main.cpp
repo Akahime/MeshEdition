@@ -2,6 +2,7 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <unistd.h>
 #include <ctime>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -9,14 +10,18 @@
 
 #include "../Core/OBJFileUtil.h"
 #include "MeshOperator.h"
+#include "interactionManager.h"
+
 
 using namespace MeshLib;
 
 Solid *mesh;
+MeshOperator mo;
 OBJFileUtil of;
 
 std::string fileName;
-int iterations = 2, mode = 0;
+int iterations = 0, mode = 0;
+static int menu_id;
 
 void displayMesh(int mode)
 {
@@ -57,32 +62,24 @@ void displayMesh(int mode)
     }
 }
 
-
-void loopSubdivision()
-{
-    //Make Operations
-    MeshOperator mo;
-    clock_t start = clock();
-    for (unsigned i = 0; i < iterations; ++i)
-    {
-        std::cout << "Iteration " << i << std::endl;
-        mo.LoopSubdivisionOneStep(mesh);
-    }
-    clock_t end = clock();
-    std::cout << "Time consumed: " << (double)(end - start) / (double)CLOCKS_PER_SEC << std::endl;
-
-    // Write out the resultant obj file
-    std::ofstream out((fileName.substr(0, fileName.rfind(".")) + ".loop."+std::to_string(iterations)+".obj").c_str());
-    of.saveSolid(mesh, out);
-}
-
 void display()
 {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //loopSubdivision();
+    /** Operations **/
+    //clock_t start = clock();
+
+    //clock_t end = clock();
+    //std::cout << "Time consumed: " << (double)(end - start) / (double)CLOCKS_PER_SEC << std::endl;
+    /** Operations **/
+
     glLoadIdentity();
+
+    glPushMatrix();
+
+    glRotatef(xrot, 1.0f, 0.0f, 0.0f);
+    glRotatef(yrot, 0.0f, 1.0f, 0.0f);
 
     glTranslatef(-5,-5,-20);
     gluLookAt (0.0, 0.0, 0.0, 0.0, 0.0, 10.0, 0.0, 1.0, 0.0);
@@ -90,6 +87,7 @@ void display()
 
     glScalef(10,10,10);
     displayMesh(mode);
+    glPopMatrix();
 
     glutSwapBuffers();
     glFlush();
@@ -122,23 +120,47 @@ void init()
 
     glClearColor(0.0, 0.0, 0.0, 0.0);
     initLights();
-    glShadeModel(GL_FLAT);
+    if(mode == 0)
+    {
+        glShadeModel(GL_FLAT);
+    }
+   else
+    {
+        glShadeModel(GL_SMOOTH);
+    }
     glEnable(GL_DEPTH_TEST);
 }
 
-void reshape(int w, int h)
-{
-
-    glViewport(0, 0, w, h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    // Set the clipping volume
-    gluPerspective(45.0f, (GLfloat)w / (GLfloat)h, 1.0f, 100.0f);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+void menu(int num){
+    switch(num)
+    {
+        case 0:
+            xrot =0; yrot=0;
+            break;
+        case 1:
+            mo.LoopSubdivisionOneStep(mesh);
+            iterations += 1;
+            break;
+        case 2:
+            mo.Simplification(mesh);
+            break;
+        case 3:
+            std::ofstream out((fileName.substr(0, fileName.rfind(".")) + ".loop."+std::to_string(iterations)+".obj").c_str());
+            of.saveSolid(mesh, out);
+            break;
+    }
+    glutPostRedisplay();
 }
+
+void createMenu(){
+    menu_id = glutCreateMenu(menu);
+    glutAddMenuEntry("Reset camera",0);
+    glutAddMenuEntry("Loop subdivision",1);
+    glutAddMenuEntry("Simplification",2);
+    glutAddMenuEntry("Save object",3);
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
 
 
 int main(int argc, char *argv[])
@@ -148,15 +170,24 @@ int main(int argc, char *argv[])
         std::cout << "USAGE: [.exe] [in.obj]" << std::endl;
         return -1;
     }
+
+    if( access( argv[1], F_OK ) == -1 )
+    {
+        std::cout << "No file with name "<<argv[1]<<" was found." << std::endl;
+        return -1;
+    }
     fileName = argv[1];
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(800, 800);
     glutCreateWindow("Display and simplify Mesh");
-    init();
-    glutReshapeFunc(reshape);
+    init ();
+    createMenu();
     glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    glutMouseFunc(mouse);
+    glutMotionFunc(mouseMotion);
     glutMainLoop();
 
 	return 0;

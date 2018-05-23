@@ -100,7 +100,7 @@ Point Vertex::normal() {
 		} while (h != halfedge());
 	}
 
-	N = N / N.norm();
+	N /= N.norm();
 
 	return N;
 };

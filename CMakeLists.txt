@@ -12,6 +12,8 @@ set(SOURCE_FILES
         src/main.cpp
         src/MeshOperator.cpp
         src/MeshOperator.h
+        src/interactionManager.cpp
+        src/interactionManager.h
         Core/Array.h
         Core/avltree.h
         Core/DList.h
@@ -45,7 +47,8 @@ set(SOURCE_FILES
         Core/Trait.cpp
         Core/Trait.h
         Core/Vertex.cpp
-        Core/Vertex.h Core/mutablePriorityQueue.h)
+        Core/Vertex.h
+        Core/mutablePriorityQueue.h)
 
 add_executable(MeshEdition ${SOURCE_FILES})
 target_link_libraries(MeshEdition ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})

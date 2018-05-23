@@ -365,6 +365,12 @@ public:
 	void _FaceNormal(MeshLib::Solid *pMesh);
 	void _VertexNormal(MeshLib::Solid *pMesh);
 
+	//! Collapse Edge
+	/*!
+	  \param edge an edge to be collapsed
+	*/
+	void	collapseEdge(Edge * edge);
+
 	void readBYU(  std::istream & is );
 	void writeBYU( std::ostream & os );
 
@@ -438,11 +444,7 @@ protected:
       \return a tFace which is the new face.
     */
 	tFace     createFace( int * v, int id ); //create a triangle
-	//! Collapse Edge
-	/*!
-	  \param edge an edge to be collapsed
-	*/
-	void	collapseEdge(Edge * edge);
+
 	//! Collapse Edge according to vertex
 	/*!
 	  \param edge an edge to be collapsed

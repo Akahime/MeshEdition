@@ -129,10 +129,14 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
 
 }
 
-void Simplification(Solid *mesh)
+void MeshOperator::Simplification(Solid *mesh)
 {
+    glm::mat4 K;
+    HalfEdge *h;
+
     // Compute quadrics for each face
     SolidFaceIterator faceIterator(mesh);
+
     for(; !faceIterator.end(); ++faceIterator)
     {
         // We want the vector (a, b, c, d) such as the face equation is ax+by+cz+d=0
@@ -145,7 +149,7 @@ void Simplification(Solid *mesh)
         double c = f->norm()(2);
         double d = -(f->norm()*f->halfedge()->target()->point());
 
-        glm::mat4 K = glm::mat4(glm::vec4(a*a, a*b, a*c, a*d), glm::vec4(b*a, b*b, b*c, b*d), glm::vec4(c*a, c*b, c*c, c*d), glm::vec4(a*d, b*d, c*d, d*d));
+        K = glm::mat4(glm::vec4(a*a, a*b, a*c, a*d), glm::vec4(b*a, b*b, b*c, b*d), glm::vec4(c*a, c*b, c*c, c*d), glm::vec4(a*d, b*d, c*d, d*d));
         (*faceIterator)->quadric() = K;
     }
 
@@ -153,9 +157,10 @@ void Simplification(Solid *mesh)
     SolidVertexIterator vertexIterator(mesh);
     for(; !vertexIterator.end(); ++vertexIterator)
     {
-        HalfEdge *h = (*vertexIterator)->halfedge();
-        glm::mat4x4 K = glm::mat4x4(0.0f);
+        h = (*vertexIterator)->halfedge();
+        K = glm::mat4x4(0.0f);
 
+        // Iterate over the neighbouring faces
         if (mesh->isBoundary(*vertexIterator)) {
             do {
                 K += h->face()->quadric();
@@ -183,8 +188,61 @@ void Simplification(Solid *mesh)
     int targetFaces = currFaces/4;
     while(currFaces > targetFaces)
     {
-        // Collapse edge
-        // TODO
+        // COLLAPSE EDGE ROUTINE
+        // Get cheapest edge
+        Edge *cheapEdge = queue.top().edge;
+
+        // Remove it from queue
+        queue.pop();
+
+        // Compute the new quadric
+        K = cheapEdge->halfedge(0)->source()->quadric() + cheapEdge->halfedge(0)->target()->quadric();
+
+        // Remove edges touching its endpoints from the queue
+        for(int i=0; i<2; i++)
+        {
+            h = cheapEdge->halfedge(i);
+
+            // Iterate over the neighbouring faces
+            if (mesh->isBoundary(h)) {
+                do {
+                    Edge *e = h->edge();
+                    queue.remove(e->record);
+                    h = h->he_next()->he_sym();
+                } while (h != cheapEdge->halfedge(i));
+            } else {
+                do {
+                    Edge *e = h->edge();
+                    queue.remove(e->record);
+                    h = h->he_sym()->he_next();
+                } while (h != cheapEdge->halfedge(i));
+            }
+        }
+
+        // Collapse edge (merges source and target to source vertex)
+        Vertex *newVert = cheapEdge->halfedge(0)->source();
+        mesh->collapseEdge(cheapEdge);
+
+        //Set the quadric of new vertex
+        newVert->quadric() = K;
+
+        // Add in queue new records of edges touching new vertex
+        h = newVert->halfedge();
+        if (mesh->isBoundary(newVert)) {
+            do {
+                Edge *e = h->edge();
+                e->record = EdgeRecord(e);
+                queue.insert(e->record);
+                h = h->he_next()->he_sym();
+            } while (h != newVert->halfedge());
+        } else {
+            do {
+                Edge *e = h->edge();
+                e->record = EdgeRecord(e);
+                queue.insert(e->record);
+                h = h->he_sym()->he_next();
+            } while (h != newVert->halfedge());
+        }
 
         // Update number of faces
         currFaces = mesh->numFaces();
