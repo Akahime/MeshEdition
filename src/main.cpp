@@ -20,7 +20,8 @@ MeshOperator mo;
 OBJFileUtil of;
 
 std::string fileName;
-int iterations = 0, mode = 0;
+std::string infoString="";
+int iterations = 0;
 static int menu_id;
 
 void displayMesh(int mode)
@@ -67,25 +68,25 @@ void display()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /** Operations **/
-    //clock_t start = clock();
+    if(mode == 0)
+    {
+        glShadeModel(GL_FLAT);
+    }
+    else
+    {
+        glShadeModel(GL_SMOOTH);
+    }
 
-    //clock_t end = clock();
-    //std::cout << "Time consumed: " << (double)(end - start) / (double)CLOCKS_PER_SEC << std::endl;
-    /** Operations **/
-
-    glLoadIdentity();
-
+    renderBitmapString(2,7, GLUT_BITMAP_HELVETICA_18, infoString);
+    
     glPushMatrix();
 
-    glRotatef(xrot, 1.0f, 0.0f, 0.0f);
-    glRotatef(yrot, 0.0f, 1.0f, 0.0f);
+    setCamera();
 
-    glTranslatef(-5,-5,-20);
-    gluLookAt (0.0, 0.0, 0.0, 0.0, 0.0, 10.0, 0.0, 1.0, 0.0);
+    //glTranslatef(-5,-5,-20);
     //glutSolidSphere (1.0, 20, 16);
+    //glScalef(10,10,10);
 
-    glScalef(10,10,10);
     displayMesh(mode);
     glPopMatrix();
 
@@ -120,33 +121,33 @@ void init()
 
     glClearColor(0.0, 0.0, 0.0, 0.0);
     initLights();
-    if(mode == 0)
-    {
-        glShadeModel(GL_FLAT);
-    }
-   else
-    {
-        glShadeModel(GL_SMOOTH);
-    }
     glEnable(GL_DEPTH_TEST);
 }
 
 void menu(int num){
+    clock_t start, end;
     switch(num)
     {
         case 0:
-            xrot =0; yrot=0;
+            resetCamera();
             break;
         case 1:
+            start = clock();
             mo.LoopSubdivisionOneStep(mesh);
             iterations += 1;
+            end = clock();
+            infoString = "Loop subdivision completed. Time = " + std::to_string((double)(end - start) / (double)CLOCKS_PER_SEC)+"s";
             break;
         case 2:
+            start = clock();
             mo.Simplification(mesh);
+            end = clock();
+            infoString = "Simplification completed. Time = " + std::to_string((double)(end - start) / (double)CLOCKS_PER_SEC)+"s";
             break;
         case 3:
             std::ofstream out((fileName.substr(0, fileName.rfind(".")) + ".loop."+std::to_string(iterations)+".obj").c_str());
             of.saveSolid(mesh, out);
+            infoString = "File successfully saved in "+(fileName.substr(0, fileName.rfind(".")) + ".loop."+std::to_string(iterations)+".obj");
             break;
     }
     glutPostRedisplay();
@@ -186,6 +187,7 @@ int main(int argc, char *argv[])
     createMenu();
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
+    glutKeyboardFunc(keyboard);
     glutMouseFunc(mouse);
     glutMotionFunc(mouseMotion);
     glutMainLoop();
