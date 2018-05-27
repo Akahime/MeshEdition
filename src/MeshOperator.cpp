@@ -48,7 +48,7 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
         }
     }
 
-    // Loops through Edges of new mesh (only those common with old mesh) and split them
+    // Loops through Edges (only those common with old mesh) and split them
     std::vector<Edge*> edgesToSwap;
     Edge *newEdgesFromSplit[2]={NULL,NULL};
 
@@ -82,7 +82,7 @@ void MeshOperator::LoopSubdivisionOneStep(Solid *mesh)
     }
 
 
-    //new position of old vertices determined here
+    // Position all vertices
     SolidVertexIterator newVertexIterator(&meshCopy);
     double beta; int n;
     for(i=0; i<(sizeof(oldMeshVertices)/sizeof(*oldMeshVertices)); i++,++newVertexIterator)

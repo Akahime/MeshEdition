@@ -86,6 +86,7 @@ void display()
         setCamera();
         glEnable(GL_LIGHTING);
         // Render mesh
+        glTranslatef(0.5,0,0);
         displayMesh(mode);
     glPopMatrix();
 

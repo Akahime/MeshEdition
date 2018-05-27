@@ -1,5 +1,6 @@
 #include "Vertex.h"
 #include "HalfEdge.h"
+#include "iterators.h"
 
 using namespace MeshLib;
 
@@ -82,22 +83,12 @@ Point Vertex::normal() {
 	Point N(0., 0., 0.);
 	Point pi = m_point;
 
-	// Iterate over neighbors.
 	HalfEdge *h = m_halfedge;
-	if (m_boundary) {
-		do {
-			Point pj = h->he_next()->vertex()->point();
-			Point pk = h->he_next()->he_next()->vertex()->point();
-			N += (pj - pi)^(pk - pi);
-			h = h->he_next()->he_sym();
-		} while (h != halfedge());
-	} else {
-		do {
-			Point pj = h->he_next()->vertex()->point();
-			Point pk = h->he_next()->he_next()->vertex()->point();
-			N += (pj - pi)^(pk - pi);
-			h = h->he_sym()->he_next();
-		} while (h != halfedge());
+
+	// Iterate over neighbors.
+	for(VertexFaceIterator vfIterator(h->target()); !vfIterator.end (); ++vfIterator){
+		Face *f = *vfIterator;
+		N += f->norm();
 	}
 
 	N /= N.norm();
