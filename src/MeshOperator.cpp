@@ -157,20 +157,12 @@ void MeshOperator::Simplification(Solid *mesh)
     SolidVertexIterator vertexIterator(mesh);
     for(; !vertexIterator.end(); ++vertexIterator)
     {
-        h = (*vertexIterator)->halfedge();
         K = glm::mat4x4(0.0f);
+        h = (*vertexIterator)->halfedge();
 
         // Iterate over the neighbouring faces
-        if (mesh->isBoundary(*vertexIterator)) {
-            do {
-                K += h->face()->quadric();
-                h = h->he_next()->he_sym();
-            } while (h != (*vertexIterator)->halfedge());
-        } else {
-            do {
-                K += h->face()->quadric();
-                h = h->he_sym()->he_next();
-            } while (h != (*vertexIterator)->halfedge());
+        for(VertexFaceIterator vfIterator(h->source()); !vfIterator.end (); ++vfIterator){
+            K += (*vfIterator)->quadric();
         }
     }
 
@@ -203,19 +195,9 @@ void MeshOperator::Simplification(Solid *mesh)
         {
             h = cheapEdge->halfedge(i);
 
-            // Iterate over the neighbouring faces
-            if (mesh->isBoundary(h)) {
-                do {
-                    Edge *e = h->edge();
-                    queue.remove(e->record);
-                    h = h->he_next()->he_sym();
-                } while (h != cheapEdge->halfedge(i));
-            } else {
-                do {
-                    Edge *e = h->edge();
-                    queue.remove(e->record);
-                    h = h->he_sym()->he_next();
-                } while (h != cheapEdge->halfedge(i));
+            //Iterate over neighbouring edges
+            for(VertexEdgeIterator veIterator(h->target()); !veIterator.end (); ++veIterator){
+                queue.remove((*veIterator)->record);
             }
         }
 
@@ -227,21 +209,9 @@ void MeshOperator::Simplification(Solid *mesh)
         newVert->quadric() = K;
 
         // Add in queue new records of edges touching new vertex
-        h = newVert->halfedge();
-        if (mesh->isBoundary(newVert)) {
-            do {
-                Edge *e = h->edge();
-                e->record = EdgeRecord(e);
-                queue.insert(e->record);
-                h = h->he_next()->he_sym();
-            } while (h != newVert->halfedge());
-        } else {
-            do {
-                Edge *e = h->edge();
-                e->record = EdgeRecord(e);
-                queue.insert(e->record);
-                h = h->he_sym()->he_next();
-            } while (h != newVert->halfedge());
+        for(VertexEdgeIterator veIterator(newVert); !veIterator.end (); ++veIterator){
+            (*veIterator)->record = EdgeRecord((*veIterator));
+            queue.insert((*veIterator)->record);
         }
 
         // Update number of faces

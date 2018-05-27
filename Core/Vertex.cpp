@@ -87,8 +87,7 @@ Point Vertex::normal() {
 
 	// Iterate over neighbors.
 	for(VertexFaceIterator vfIterator(h->target()); !vfIterator.end (); ++vfIterator){
-		Face *f = *vfIterator;
-		N += f->norm();
+		N += (*vfIterator)->norm();
 	}
 
 	N /= N.norm();
