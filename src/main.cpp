@@ -77,17 +77,16 @@ void display()
         glShadeModel(GL_SMOOTH);
     }
 
-    renderBitmapString(2,7, GLUT_BITMAP_HELVETICA_18, infoString);
-    
+    // Render text info
+    glColor3f(0.8,0.8,1);
+    glDisable(GL_LIGHTING);
+    renderBitmapString(3,7, GLUT_BITMAP_HELVETICA_18, infoString);
+
     glPushMatrix();
-
-    setCamera();
-
-    //glTranslatef(-5,-5,-20);
-    //glutSolidSphere (1.0, 20, 16);
-    //glScalef(10,10,10);
-
-    displayMesh(mode);
+        setCamera();
+        glEnable(GL_LIGHTING);
+        // Render mesh
+        displayMesh(mode);
     glPopMatrix();
 
     glutSwapBuffers();
@@ -96,13 +95,11 @@ void display()
 
 void initLights(void)
 {
-    //GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
     GLfloat mat_shininess[] = { 10.0 };
     GLfloat mat_diffuse[] = {0.6, 0.6, 0.6, 1.0};
 
     GLfloat light_position[] = { 1.0, 1.0, 0, 0.0 };
     GLfloat light_ambient[] = { 0.5, 0.5, 1.0, 0.1};
-    //glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
@@ -118,6 +115,8 @@ void init()
     mesh = new Solid();
     std::ifstream in(fileName);
     of.readToSolid(mesh, in);
+
+    infoString = "Num vertices : " + std::to_string(mesh->numVertices());
 
     glClearColor(0.0, 0.0, 0.0, 0.0);
     initLights();
@@ -136,13 +135,13 @@ void menu(int num){
             mo.LoopSubdivisionOneStep(mesh);
             iterations += 1;
             end = clock();
-            infoString = "Loop subdivision completed. Time = " + std::to_string((double)(end - start) / (double)CLOCKS_PER_SEC)+"s";
+            infoString = "Loop subdivision completed. Time = " + std::to_string((double)(end - start) / (double)CLOCKS_PER_SEC)+"s Num vertices : "+std::to_string(mesh->numVertices());
             break;
         case 2:
             start = clock();
             mo.Simplification(mesh);
             end = clock();
-            infoString = "Simplification completed. Time = " + std::to_string((double)(end - start) / (double)CLOCKS_PER_SEC)+"s";
+            infoString = "Simplification completed. Time = " + std::to_string((double)(end - start) / (double)CLOCKS_PER_SEC)+"s Num vertices : "+std::to_string(mesh->numVertices());
             break;
         case 3:
             std::ofstream out((fileName.substr(0, fileName.rfind(".")) + ".loop."+std::to_string(iterations)+".obj").c_str());
