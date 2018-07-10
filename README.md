@@ -5,8 +5,7 @@ Author: Sarah Gross
 
 This project creates mesh operations on objects.
 
-demo.gif shows a demonstration of the result.
-![alt text](https://github.com/Akahime/OpenglIsland/blob/master/demo.gif)
+![alt text](https://github.com/Akahime/MeshEdition/blob/master/demo.gif)
 
 # Building and running the Code
 
@@ -55,13 +54,10 @@ Core                -- useful framework for mesh construction (CREDIT SNRAO 310 
 
 
 Theory : 
-Subdivision:
-+ https://github.com/cmu462/Scotty3D/wiki/Developer-Manual-(MeshEdit) 
-+ https://graphics.stanford.edu/~mdfisher/subdivision.html 
-+ http://www.cs.cmu.edu/afs/cs/academic/class/15462-s14/www/lec_slides/Subdivision.pdf
-Simplification:
-+ https://classes.soe.ucsc.edu/cmps160/Spring05/finalpages/scyiu/
-+ https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf
- 
-Code : https://github.com/snrao310/LoopSubdivition-for-HalfEdgeMesh-Library
-Display obj : https://github.com/Hai-Lin/Subdivision
+* Subdivision:
+** https://github.com/cmu462/Scotty3D/wiki/Developer-Manual-(MeshEdit) 
+** https://graphics.stanford.edu/~mdfisher/subdivision.html 
+** http://www.cs.cmu.edu/afs/cs/academic/class/15462-s14/www/lec_slides/Subdivision.pdf
+* Simplification:
+** https://classes.soe.ucsc.edu/cmps160/Spring05/finalpages/scyiu/
+** https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf
