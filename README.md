@@ -7,6 +7,7 @@ This project creates mesh operations on objects.
 
 ![alt text](https://github.com/leihuayi/MeshEdition/blob/master/demo.gif)
 
+
 # Building and running the Code
 
 This project was originally built using the IDE CLion using CMakeLists.txt.
